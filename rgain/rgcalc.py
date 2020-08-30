@@ -119,9 +119,9 @@ class ReplayGain(GObject.GObject):
         if elem is None:
             # that element couldn't be created, maybe because plugins are
             # missing?
-            raise MissingPluginsError(u"failed to construct pipeline (did you "
-                                      u"install all necessary GStreamer "
-                                      u"plugins?)")
+            raise MissingPluginsError("failed to construct pipeline (did you "
+                                      "install all necessary GStreamer "
+                                      "plugins?)")
         else:
             return elem
 
@@ -176,7 +176,7 @@ class ReplayGain(GObject.GObject):
         """
         # get the next file
         try:
-            fname = self._files_iter.next()
+            fname = next(self._files_iter)
         except StopIteration:
             self.emit("all-finished", self.track_data, self.album_data)
             return False

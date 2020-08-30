@@ -34,14 +34,14 @@ def calculate_gain(files, ref_level):
         loop.quit()
     
     def on_trk_started(evsrc, filename):
-        print ou("  %s:" % filename.decode("utf-8")),
+        print(ou("  %s:" % filename.decode("utf-8")), end=' ')
         sys.stdout.flush()
         
     def on_trk_finished(evsrc, filename, gaindata):
         if gaindata:
-            print "%.2f dB" % gaindata.gain
+            print("%.2f dB" % gaindata.gain)
         else:
-            print "done"
+            print("done")
 
     def on_error(evsrc, exc):
         exc_slot[0] = exc
@@ -71,32 +71,32 @@ def do_gain(files, ref_level=89, force=False, dry_run=False, album=True,
     newfiles = []
     for filename in files:
         if not formats_map.is_supported_format(os.path.splitext(filename)[1]):
-            print ou(u"%s: not supported, ignoring it" % filename)
+            print(ou("%s: not supported, ignoring it" % filename))
         else:
             newfiles.append(filename)
     files = newfiles
     
     if not force:
-        print "Checking for Replay Gain information ..."
+        print("Checking for Replay Gain information ...")
         newfiles = []
         for filename in files:
-            print ou(u"  %s:" % filename),
+            print(ou("  %s:" % filename), end=' ')
             try:
                 trackdata, albumdata = formats_map.read_gain(filename)
-            except Exception, exc:
-                raise Error(u"%s: %s" % (filename, exc))
+            except Exception as exc:
+                raise Error("%s: %s" % (filename, exc))
             else:
                 if trackdata and albumdata:
-                    print "track and album"
+                    print("track and album")
                 elif not trackdata and albumdata:
-                    print "album only"
+                    print("album only")
                     newfiles.append(filename)
                 elif trackdata and not albumdata:
-                    print "track only"
+                    print("track only")
                     if album:
                         newfiles.append(filename)
                 else:
-                    print "none"
+                    print("none")
                     newfiles.append(filename)
         
         if not album:
@@ -106,34 +106,34 @@ def do_gain(files, ref_level=89, force=False, dry_run=False, album=True,
     
     if not files:
         # no files left
-        print "Nothing to do."
+        print("Nothing to do.")
         return 0
     
     # calculate gain
-    print "Calculating Replay Gain information ..."
+    print("Calculating Replay Gain information ...")
     try:
         tracks_data, albumdata = calculate_gain(files, ref_level)
         if album:
-            print "  Album gain: %.2f dB" % albumdata.gain
-    except Exception, exc:
-        raise Error(u"Error while calculating gain - %s" % exc)
+            print("  Album gain: %.2f dB" % albumdata.gain)
+    except Exception as exc:
+        raise Error("Error while calculating gain - %s" % exc)
     
     if not album:
         albumdata = None
     
     # write gain
     if not dry_run:
-        print "Writing Replay Gain information to files ..."
-        for filename, trackdata in tracks_data.iteritems():
-            print ou(u"  %s:" % filename),
+        print("Writing Replay Gain information to files ...")
+        for filename, trackdata in tracks_data.items():
+            print(ou("  %s:" % filename), end=' ')
             try:
                 formats_map.write_gain(filename, trackdata, albumdata)
-            except Exception, exc:
-                raise Error(u"%s: %s" % (filename, exc))
+            except Exception as exc:
+                raise Error("%s: %s" % (filename, exc))
             else:
-                print "done"
+                print("done")
     
-    print "Done"
+    print("Done")
 
 
 # a simple Replay Gain dump
@@ -142,15 +142,15 @@ def show_rgain_info(filenames, mp3_format=None):
     
     for filename in filenames:
         filename = un(filename, getfilesystemencoding())
-        print ou(filename)
+        print(ou(filename))
         try:
             trackdata, albumdata = formats_map.read_gain(filename)
-        except Exception, exc:
-            print "  <Error reading Replay Gain: %r>" % exc
+        except Exception as exc:
+            print("  <Error reading Replay Gain: %r>" % exc)
             continue
         
         if not trackdata and not albumdata:
-            print "  <No Replay Gain information>"
+            print("  <No Replay Gain information>")
         
         if trackdata and trackdata.ref_level:
             ref_level = trackdata.ref_level
@@ -160,14 +160,14 @@ def show_rgain_info(filenames, mp3_format=None):
             ref_level = None
         
         if ref_level is not None:
-            print "  Reference loudness %i dB" % ref_level
+            print("  Reference loudness %i dB" % ref_level)
         
         if trackdata:
-            print "  Track gain %.2f dB" % trackdata.gain
-            print "  Track peak %.8f" % trackdata.peak
+            print("  Track gain %.2f dB" % trackdata.gain)
+            print("  Track peak %.8f" % trackdata.peak)
         if albumdata:
-            print "  Album gain %.2f dB" % albumdata.gain
-            print "  Album peak %.8f" % albumdata.peak
+            print("  Album gain %.2f dB" % albumdata.gain)
+            print("  Album peak %.8f" % albumdata.peak)
 
 
 def rgain_options():
@@ -211,12 +211,12 @@ def replaygain():
         try:
             do_gain(args, opts.ref_level, opts.force, opts.dry_run, opts.album,
                     opts.mp3_format)
-        except Error, exc:
-            print
-            print >> sys.stderr, ou(unicode(exc))
+        except Error as exc:
+            print()
+            print(ou(str(exc)), file=sys.stderr)
             sys.exit(1)
         except KeyboardInterrupt:
-            print "Interrupted."
+            print("Interrupted.")
 
 
 if __name__ == "__main__":
