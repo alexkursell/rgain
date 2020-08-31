@@ -10,8 +10,7 @@ import tempfile
 try:
     from setuptools import Command, Distribution, setup
 except ImportError:
-    print("setuptools unavailable, falling back to distutils.",
-          file=sys.stderr)
+    print("setuptools unavailable, falling back to distutils.", file=sys.stderr)
     from distutils.core import Command, Distribution, setup
 from distutils.command.build import build
 
@@ -45,8 +44,7 @@ try:
             if not self.outputdir:
                 self.outputdir = os.path.join("build", "man")
             self.rst_manpages = self.distribution.rst_manpages
-            self.rst_manpages_update_info = \
-                self.distribution.rst_manpages_update_info
+            self.rst_manpages_update_info = self.distribution.rst_manpages_update_info
             self.rst_manpages_version = self.distribution.rst_manpages_version
             self.rst_manpages_date = self.distribution.rst_manpages_date
 
@@ -64,11 +62,13 @@ try:
                                 if line.startswith(":Date:"):
                                     dt = self.rst_manpages_date
                                     tmp.write(
-                                        ":Date: %s-%s-%s\n" %
-                                        (dt.year, dt.month, dt.day))
+                                        ":Date: %s-%s-%s\n"
+                                        % (dt.year, dt.month, dt.day)
+                                    )
                                 elif line.startswith(":Version:"):
-                                    tmp.write(":Version: %s\n" %
-                                              self.rst_manpages_version)
+                                    tmp.write(
+                                        ":Version: %s\n" % self.rst_manpages_version
+                                    )
                                 else:
                                     tmp.write(line)
                     real_infile = tmp.name
@@ -80,7 +80,8 @@ try:
                 docutils.core.publish_file(
                     source_path=real_infile,
                     destination_path=os.path.join(self.outputdir, outfile),
-                    writer_name="manpage")
+                    writer_name="manpage",
+                )
                 if real_infile != infile:
                     os.remove(real_infile)
                 print("ok")
@@ -134,10 +135,8 @@ NOTE: rgain is currently not being developed; for more information or if you'd
 like to help remedying this situation, see:
 https://bitbucket.org/fk/rgain/issues/26/wanted-new-maintainer
 """,
-
     packages=["rgain", "rgain.script"],
     scripts=["scripts/replaygain", "scripts/collectiongain"],
     requires=["pygobject", "mutagen"],
-
     **manpages_args
 )

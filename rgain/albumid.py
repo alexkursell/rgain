@@ -35,30 +35,28 @@ def _get_simple_tag(tags, mp3_keys, default_key):
     # default fall-through
     return None
 
+
 get_musicbrainz_album_id = lambda tags: _get_simple_tag(
     tags,
     ["TXXX:MusicBrainz Album Id", "TXXX:MUSICBRAINZ_ALBUMID"],
-    "musicbrainz_albumid")
+    "musicbrainz_albumid",
+)
 
 get_musicbrainz_albumartist_id = lambda tags: _get_simple_tag(
     tags,
     ["TXXX:MusicBrainz Album Artist Id", "TXXX:MUSICBRAINZ_ALBUMARTISTID"],
-    "musicbrainz_albumartistid")
+    "musicbrainz_albumartistid",
+)
 
 get_musicbrainz_artist_id = lambda tags: _get_simple_tag(
     tags,
     ["TXXX:MusicBrainz Artist Id", "TXXX:MUSICBRAINZ_ARTISTID"],
-    "musicbrainz_artistid")
+    "musicbrainz_artistid",
+)
 
-get_album = lambda tags: _get_simple_tag(
-    tags,
-    ["TALB"],
-    "album")
+get_album = lambda tags: _get_simple_tag(tags, ["TALB"], "album")
 
-get_artist = lambda tags: _get_simple_tag(
-    tags,
-    ["TPE1"],
-    "artist")
+get_artist = lambda tags: _get_simple_tag(tags, ["TPE1"], "artist")
 
 # XXX: We're not doing case-insensitive checking anymore. Let's hope that
 # doesn't regress anything...
@@ -72,9 +70,9 @@ get_artist = lambda tags: _get_simple_tag(
 #    http://wiki.hydrogenaudio.org/index.php?title=Foobar2000:ID3_Tag_Mapping
 get_albumartist = lambda tags: _get_simple_tag(
     tags,
-    ["TXXX:albumartist", "TXXX:QuodLibet::albumartist", "TXXX:ALBUM ARTIST",
-     "TPE2"],
-    "albumartist")
+    ["TXXX:albumartist", "TXXX:QuodLibet::albumartist", "TXXX:ALBUM ARTIST", "TPE2"],
+    "albumartist",
+)
 
 
 def _take_first_tag(tags, default, functions):
@@ -104,10 +102,9 @@ def get_album_id(tags):
         return mb_album_id
     album = get_album(tags)
     if album is not None:
-        artist_part = _take_first_tag(tags, None, [
-            get_musicbrainz_albumartist_id,
-            get_albumartist,
-            get_artist])
+        artist_part = _take_first_tag(
+            tags, None, [get_musicbrainz_albumartist_id, get_albumartist, get_artist]
+        )
         if artist_part is None:
             return album
         else:

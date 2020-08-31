@@ -86,10 +86,12 @@ class SimpleTagReaderWriter(BaseTagReaderWriter):
         if tags is None:
             raise AudioFormatError(filename)
 
-        track_gain = self._read_gain_data(tags, self.TRACK_GAIN_TAG,
-                                          self.TRACK_PEAK_TAG)
-        album_gain = self._read_gain_data(tags, self.ALBUM_GAIN_TAG,
-                                          self.ALBUM_PEAK_TAG)
+        track_gain = self._read_gain_data(
+            tags, self.TRACK_GAIN_TAG, self.TRACK_PEAK_TAG
+        )
+        album_gain = self._read_gain_data(
+            tags, self.ALBUM_GAIN_TAG, self.ALBUM_PEAK_TAG
+        )
         ref_level = self._read_ref_loudness(tags)
         if ref_level is not None:
             if track_gain:
@@ -166,8 +168,7 @@ class MP4TagReaderWriter(SimpleTagReaderWriter):
         return SimpleTagReaderWriter._dump_peak(self, peak).encode("ascii")
 
     def _dump_ref_level(self, ref_level):
-        return SimpleTagReaderWriter._dump_ref_level(
-            self, ref_level).encode("ascii")
+        return SimpleTagReaderWriter._dump_ref_level(self, ref_level).encode("ascii")
 
 
 # MP3 support base class
@@ -223,8 +224,9 @@ def clamp(v, min, max):
 def clamp_rva2_gain(v):
     v, clamped = clamp(v, RVA2_GAIN_MIN, RVA2_GAIN_MAX)
     if clamped:
-        warnings.warn("gain value was out of bounds for RVA2 frame and was "
-                      "clamped to %.2f" % v)
+        warnings.warn(
+            "gain value was out of bounds for RVA2 frame and was " "clamped to %.2f" % v
+        )
     return v
 
 
@@ -233,8 +235,9 @@ def clamp_rva2_gain(v):
 def clamp_rva2_peak(v):
     v, clamped = clamp(v, RVA2_PEAK_MIN, RVA2_PEAK_MAX)
     if clamped:
-        warnings.warn("peak value was out of bounds for RVA2 frame and was "
-                      "clamped to %.5f" % v)
+        warnings.warn(
+            "peak value was out of bounds for RVA2 frame and was " "clamped to %.5f" % v
+        )
     return v
 
 
@@ -242,9 +245,11 @@ def clamp_gain_data(gain_data):
     if gain_data is None:
         return None
     else:
-        return GainData(clamp_rva2_gain(gain_data.gain),
-                        clamp_rva2_peak(gain_data.peak),
-                        gain_data.ref_level)
+        return GainData(
+            clamp_rva2_gain(gain_data.gain),
+            clamp_rva2_peak(gain_data.peak),
+            gain_data.ref_level,
+        )
 
 
 # ID3v2 support for legacy RVA2-frames-based format according to
@@ -287,8 +292,9 @@ class MP3DefaultTagReaderWriter(BaseTagReaderWriter):
         if rgorg_track_gain is None or rva2_track_gain is None:
             # ensure that track gain exists for both
             return (None, None)
-        if (not gaindata_almost_equal(rgorg_track_gain, rva2_track_gain) or
-                not gaindata_almost_equal(rgorg_album_gain, rva2_album_gain)):
+        if not gaindata_almost_equal(
+            rgorg_track_gain, rva2_track_gain
+        ) or not gaindata_almost_equal(rgorg_album_gain, rva2_album_gain):
             # The different formats are not similar enough.
             return (None, None)
         else:
@@ -299,6 +305,7 @@ class MP3DefaultTagReaderWriter(BaseTagReaderWriter):
         self.rgorg.write_gain(filename, track_gain, album_gain)
         self.rva2.write_gain(filename, track_gain, album_gain)
 
+
 GAIN_EPSILON = 0.1
 PEAK_EPSILON = 0.001
 REF_LEVEL_EPSILON = 0.1
@@ -307,13 +314,15 @@ REF_LEVEL_EPSILON = 0.1
 # For these three functions, b is always the legacy values, i.e. the
 # potentially clamped ones.
 def gain_almost_equal(a, b):
-    return (almost_equal(a, b, GAIN_EPSILON) or
-            almost_equal(clamp_rva2_gain(a), b, GAIN_EPSILON))
+    return almost_equal(a, b, GAIN_EPSILON) or almost_equal(
+        clamp_rva2_gain(a), b, GAIN_EPSILON
+    )
 
 
 def peak_almost_equal(a, b):
-    return (almost_equal(a, b, PEAK_EPSILON) or
-            almost_equal(clamp_rva2_peak(a), b, PEAK_EPSILON))
+    return almost_equal(a, b, PEAK_EPSILON) or almost_equal(
+        clamp_rva2_peak(a), b, PEAK_EPSILON
+    )
 
 
 def gaindata_almost_equal(a, b):
@@ -327,9 +336,11 @@ def gaindata_almost_equal(a, b):
 
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
-        return (gain_almost_equal(a.gain, b.gain) and
-                peak_almost_equal(a.peak, b.peak) and
-                almost_equal(a.ref_level, b.ref_level, REF_LEVEL_EPSILON))
+        return (
+            gain_almost_equal(a.gain, b.gain)
+            and peak_almost_equal(a.peak, b.peak)
+            and almost_equal(a.ref_level, b.ref_level, REF_LEVEL_EPSILON)
+        )
 
 
 # code to pull everything together
@@ -343,8 +354,8 @@ class BaseFormatsMap(object):
     _mp3_rgorg_readerwriter = MP3rgorgTagReaderWriter()
     _mp3_rva2_readerwriter = MP3RVA2TagReaderWriter()
     _mp3_default_readerwriter = MP3DefaultTagReaderWriter(
-        _mp3_rgorg_readerwriter,
-        _mp3_rva2_readerwriter)
+        _mp3_rgorg_readerwriter, _mp3_rva2_readerwriter
+    )
 
     BASE_MAP = {
         ".ogg": _simplereaderwriter,
@@ -398,5 +409,5 @@ class BaseFormatsMap(object):
             accessor = self.BASE_MAP[ext]
         else:
             raise UnknownFiletype(ext)
-        
+
         accessor.write_gain(filename, trackgain, albumgain)

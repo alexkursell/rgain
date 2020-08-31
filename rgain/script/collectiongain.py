@@ -6,7 +6,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2, or (at your option)
 # any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -21,6 +21,7 @@ import multiprocessing
 import io
 import sys
 import os.path
+
 try:
     from hashlib import md5
 except ImportError:
@@ -47,17 +48,18 @@ def relpath(path, base):
         size += 1
     return path[size:]
 
+
 def cache_entry_valid(filepath, record):
     return (
         isinstance(filepath, str)
         and hasattr(record, "__getitem__")
         and hasattr(record, "__len__")
         and len(record) == 3
-        and (isinstance(record[0], str)
-             or record[0] is None)
-        and (isinstance(record[1], int)
-             or isinstance(record[1], float))
-        and isinstance(record[2], bool))
+        and (isinstance(record[0], str) or record[0] is None)
+        and (isinstance(record[1], int) or isinstance(record[1], float))
+        and isinstance(record[2], bool)
+    )
+
 
 def read_cache(cache_file):
     if os.path.isfile(cache_file):
@@ -84,10 +86,12 @@ def read_cache(cache_file):
                     del files[filepath]
                 return files
         except Exception as exc:
-            print(ou("Error while reading the cache, continuing without it - "
-                     "%s" % exc))
-    
+            print(
+                ou("Error while reading the cache, continuing without it - " "%s" % exc)
+            )
+
     return {}
+
 
 def write_cache(cache_file, files):
     cache_dir = os.path.dirname(cache_file)
@@ -119,7 +123,7 @@ def collect_files(music_dir, files, visited_cache, is_supported_format):
             ext = os.path.splitext(filename)[1]
             if is_supported_format(ext):
                 i += 1
-                print(ou("  [%i] %s |" % (i, filepath)), end=' ')
+                print(ou("  [%i] %s |" % (i, filepath)), end=" ")
                 try:
                     tags = mutagen.File(os.path.join(music_dir, filepath))
                     if tags is None:
@@ -131,6 +135,7 @@ def collect_files(music_dir, files, visited_cache, is_supported_format):
                 except:
                     # TODO: Maybe optionally abort here?
                     print(ou("IGNORED: unreadable file or unsupported format"))
+
 
 def transform_cache(files):
     # transform ``files`` into lists of things to process
@@ -164,6 +169,7 @@ def update_cache(files, music_dir, tracks, album_id):
         mtime = os.path.getmtime(os.path.join(music_dir, filepath))
         files[filepath] = (album_id, mtime, True)
 
+
 @contextlib.contextmanager
 def stdstreams(stdout, stderr):
     old_stdout = sys.stdout
@@ -176,13 +182,13 @@ def stdstreams(stdout, stderr):
         sys.stdout = old_stdout
         sys.stderr = old_stderr
 
-def do_gain_async(queue, job_key, files, ref_level, force, dry_run, album,
-        mp3_format):
+
+def do_gain_async(queue, job_key, files, ref_level, force, dry_run, album, mp3_format):
     output = io.StringIO()
     try:
         with stdstreams(output, output):
             if album:
-                print(ou("%s:" % job_key[1]), end=' ')
+                print(ou("%s:" % job_key[1]), end=" ")
             do_gain(files, ref_level, force, dry_run, album, mp3_format)
             print()
     except BaseException as exc:
@@ -194,9 +200,18 @@ def do_gain_async(queue, job_key, files, ref_level, force, dry_run, album,
         queue.put((job_key, output.getvalue(), None))
 
 
-def do_gain_all(music_dir, albums, single_tracks, files, ref_level=89,
-              force=False, dry_run=False, mp3_format=None, jobs=0,
-              stop_on_error=False):
+def do_gain_all(
+    music_dir,
+    albums,
+    single_tracks,
+    files,
+    ref_level=89,
+    force=False,
+    dry_run=False,
+    mp3_format=None,
+    jobs=0,
+    stop_on_error=False,
+):
     pool = multiprocessing.Pool(None if jobs == 0 else jobs)
     manager = multiprocessing.Manager()
     queue = manager.Queue()
@@ -204,16 +219,36 @@ def do_gain_all(music_dir, albums, single_tracks, files, ref_level=89,
 
     print("Dispatching jobs ...")
     if single_tracks:
-        pool.apply_async(do_gain_async, [queue, (single_tracks, None),
-            [os.path.join(music_dir, path) for path in single_tracks],
-            ref_level, force, dry_run, False, mp3_format])
+        pool.apply_async(
+            do_gain_async,
+            [
+                queue,
+                (single_tracks, None),
+                [os.path.join(music_dir, path) for path in single_tracks],
+                ref_level,
+                force,
+                dry_run,
+                False,
+                mp3_format,
+            ],
+        )
         num_jobs += 1
 
     for album_id, album_files in albums.items():
-        #print ou(u"%s:" % album_id),
-        pool.apply_async(do_gain_async, [queue, (album_files, album_id),
-            [os.path.join(music_dir, path) for path in album_files],
-            ref_level, force, dry_run, True, mp3_format])
+        # print ou(u"%s:" % album_id),
+        pool.apply_async(
+            do_gain_async,
+            [
+                queue,
+                (album_files, album_id),
+                [os.path.join(music_dir, path) for path in album_files],
+                ref_level,
+                force,
+                dry_run,
+                True,
+                mp3_format,
+            ],
+        )
         num_jobs += 1
     pool.close()
 
@@ -251,13 +286,21 @@ def do_gain_all(music_dir, albums, single_tracks, files, ref_level=89,
         print("%s successful, %s failed." % (successful, len(failed_jobs)))
 
 
-def do_collectiongain(music_dir, ref_level=89, force=False, dry_run=False,
-                      mp3_format=None, ignore_cache=False, jobs=0):
+def do_collectiongain(
+    music_dir,
+    ref_level=89,
+    force=False,
+    dry_run=False,
+    mp3_format=None,
+    ignore_cache=False,
+    jobs=0,
+):
 
     music_abspath = os.path.abspath(music_dir)
     musicpath_hash = md5(music_abspath.encode("utf-8")).hexdigest()
-    cache_file = os.path.join(os.path.expanduser("~"), ".cache",
-                              "collectiongain-cache.%s" % musicpath_hash)
+    cache_file = os.path.join(
+        os.path.expanduser("~"), ".cache", "collectiongain-cache.%s" % musicpath_hash
+    )
 
     # load the cache, if desired
     if not ignore_cache:
@@ -270,8 +313,12 @@ def do_collectiongain(music_dir, ref_level=89, force=False, dry_run=False,
     # cache is written to disk so all progress persists
     try:
         visited_cache = dict.fromkeys(iter(files.keys()), False)
-        collect_files(music_dir, files, visited_cache,
-                      rgio.BaseFormatsMap(mp3_format).is_supported_format)
+        collect_files(
+            music_dir,
+            files,
+            visited_cache,
+            rgio.BaseFormatsMap(mp3_format).is_supported_format,
+        )
         # clean cache
         for filepath, visited in list(visited_cache.items()):
             if not visited:
@@ -283,8 +330,17 @@ def do_collectiongain(music_dir, ref_level=89, force=False, dry_run=False,
         albums, single_tracks = transform_cache(files)
 
         # gain everything that has survived the cleansing
-        do_gain_all(music_dir, albums, single_tracks, files, ref_level, force,
-                  dry_run, mp3_format, jobs)
+        do_gain_all(
+            music_dir,
+            albums,
+            single_tracks,
+            files,
+            ref_level,
+            force,
+            dry_run,
+            mp3_format,
+            jobs,
+        )
     finally:
         write_cache(cache_file, files)
 
@@ -294,33 +350,49 @@ def do_collectiongain(music_dir, ref_level=89, force=False, dry_run=False,
 def collectiongain_options():
     opts = common_options()
 
-    opts.add_option("--ignore-cache", help="Do not use the file cache at all.",
-                    dest="ignore_cache", action="store_true")
-    opts.add_option("--regain", help="Fully reprocess everything. Same as "
-                    "'--force --ignore-cache'.",
-                    dest="regain", action="store_true")
-    opts.add_option("-j", "--jobs", help="Specifies the number of jobs to run "
-                    "simultaneously. Must be >= 1. By default, this is set to "
-                    "the number of CPU cores in the system to provide best "
-                    "performance.", dest="jobs", action="store", type="int")
+    opts.add_option(
+        "--ignore-cache",
+        help="Do not use the file cache at all.",
+        dest="ignore_cache",
+        action="store_true",
+    )
+    opts.add_option(
+        "--regain",
+        help="Fully reprocess everything. Same as " "'--force --ignore-cache'.",
+        dest="regain",
+        action="store_true",
+    )
+    opts.add_option(
+        "-j",
+        "--jobs",
+        help="Specifies the number of jobs to run "
+        "simultaneously. Must be >= 1. By default, this is set to "
+        "the number of CPU cores in the system to provide best "
+        "performance.",
+        dest="jobs",
+        action="store",
+        type="int",
+    )
 
     opts.set_defaults(ignore_cache=False, jobs=None)
 
     opts.set_usage("%prog [options] MUSIC_DIR")
-    opts.set_description("Calculate Replay Gain for a large set of audio files "
-                         "without asking many questions. This program "
-                         "calculates an album ID for any audo file in "
-                         "MUSIC_DIR. Then, album gain will be applied to all "
-                         "files with the same album ID. The album ID is "
-                         "created from file tags as follows: If an 'album' tag "
-                         "is present, it is joined with the contents of an "
-                         "'albumartist' tag, or, if that isn't set, the "
-                         "contents of the 'artist' tag, or nothing if there is "
-                         "no 'artist' tag as well. On the other hand, if no "
-                         "'album' tag is present, the file is assumed to be a "
-                         "single track without album; in that case, no album "
-                         "gain will be calculated for that file.")
-    
+    opts.set_description(
+        "Calculate Replay Gain for a large set of audio files "
+        "without asking many questions. This program "
+        "calculates an album ID for any audo file in "
+        "MUSIC_DIR. Then, album gain will be applied to all "
+        "files with the same album ID. The album ID is "
+        "created from file tags as follows: If an 'album' tag "
+        "is present, it is joined with the contents of an "
+        "'albumartist' tag, or, if that isn't set, the "
+        "contents of the 'artist' tag, or nothing if there is "
+        "no 'artist' tag as well. On the other hand, if no "
+        "'album' tag is present, the file is assumed to be a "
+        "single track without album; in that case, no album "
+        "gain will be calculated for that file."
+    )
+
     return opts
 
 
@@ -334,10 +406,17 @@ def collectiongain():
         optparser.error("jobs must be at least 1")
     if opts.regain:
         opts.force = opts.ignore_cache = True
-    
+
     try:
-        do_collectiongain(args[0], opts.ref_level, opts.force, opts.dry_run,
-                          opts.mp3_format, opts.ignore_cache, opts.jobs)
+        do_collectiongain(
+            args[0],
+            opts.ref_level,
+            opts.force,
+            opts.dry_run,
+            opts.mp3_format,
+            opts.ignore_cache,
+            opts.jobs,
+        )
     except Error as exc:
         print()
         print(ou(str(exc)), file=sys.stderr)
@@ -348,4 +427,3 @@ def collectiongain():
 
 if __name__ == "__main__":
     collectiongain()
-

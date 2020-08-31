@@ -42,19 +42,27 @@ class GainData(object):
         self.gain_type = gain_type
 
     def __str__(self):
-        return ("gain=%.2f dB; peak=%.8f; reference-level=%i dB" %
-                (self.gain, self.peak, self.ref_level))
+        return "gain=%.2f dB; peak=%.8f; reference-level=%i dB" % (
+            self.gain,
+            self.peak,
+            self.ref_level,
+        )
 
     def __repr__(self):
-        return "GainData(%s, %s, %s, %s)" % (self.gain, self.peak,
-                                             self.ref_level, self.gain_type)
+        return "GainData(%s, %s, %s, %s)" % (
+            self.gain,
+            self.peak,
+            self.ref_level,
+            self.gain_type,
+        )
 
     def __eq__(self, other):
         return isinstance(other, GainData) and (
-            self.gain == other.gain and
-            self.peak == other.peak and
-            self.ref_level == other.ref_level and
-            self.gain_type == other.gain_type)
+            self.gain == other.gain
+            and self.peak == other.peak
+            and self.ref_level == other.ref_level
+            and self.gain_type == other.gain_type
+        )
 
     def __ne__(self, other):
         return not self.__eq__(other)

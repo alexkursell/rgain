@@ -1,4 +1,3 @@
-
 import os.path
 import unittest
 
@@ -7,8 +6,10 @@ from rgain import GainData, rgcalc, util
 
 # Have to set up GStreamer for all these tests.
 import gi
+
 gi.require_version("Gst", "1.0")
 from gi.repository import GObject, Gst
+
 Gst.init([])
 
 
@@ -58,8 +59,10 @@ class TestReplayGain(unittest.TestCase):
             self.assertEqual(gain.gain_type, GainData.TP_TRACK)
 
     def test_track_started_finished_signals(self):
-        tracks = [os.path.join(DATA_PATH, "no-tags.flac"),
-                  os.path.join(DATA_PATH, "no-tags.mp3")]
+        tracks = [
+            os.path.join(DATA_PATH, "no-tags.flac"),
+            os.path.join(DATA_PATH, "no-tags.mp3"),
+        ]
         rg = rgcalc.ReplayGain(tracks)
         events = []
 
@@ -68,10 +71,11 @@ class TestReplayGain(unittest.TestCase):
 
         loop = GObject.MainLoop()
         with util.gobject_signals(
-                rg,
-                ("track_started", event),
-                ("track_finished", event),
-                ("all-finished", lambda *args: loop.quit())):
+            rg,
+            ("track_started", event),
+            ("track_finished", event),
+            ("all-finished", lambda *args: loop.quit()),
+        ):
             rg.start()
             loop.run()
 

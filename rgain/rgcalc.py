@@ -21,7 +21,8 @@ documentation or use the ``calculate`` function.
 """
 
 import gi
-gi.require_version('Gst', '1.0')
+
+gi.require_version("Gst", "1.0")
 from gi.repository import GObject, Gst
 
 from rgain import GainData, GSTError, util
@@ -36,11 +37,13 @@ GObject.threads_init()
 # dummy thread to force Python to initialise threading to accomodate these
 # broken pygobject versions.
 import threading
+
 threading.Thread(target=lambda: None).start()
 
 
 class MissingPluginsError(Exception):
     """We're most likely missing some GStreamer plugins."""
+
     pass
 
 
@@ -68,14 +71,22 @@ class ReplayGain(GObject.GObject):
     """
 
     __gsignals__ = {
-        "all-finished": (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE,
-                         (GObject.TYPE_PYOBJECT, GObject.TYPE_PYOBJECT)),
-        "track-started": (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE,
-                          (GObject.TYPE_STRING,)),
-        "track-finished": (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE,
-                           (GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)),
-        "error": (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE,
-                  (GObject.TYPE_PYOBJECT,)),
+        "all-finished": (
+            GObject.SIGNAL_RUN_LAST,
+            GObject.TYPE_NONE,
+            (GObject.TYPE_PYOBJECT, GObject.TYPE_PYOBJECT),
+        ),
+        "track-started": (
+            GObject.SIGNAL_RUN_LAST,
+            GObject.TYPE_NONE,
+            (GObject.TYPE_STRING,),
+        ),
+        "track-finished": (
+            GObject.SIGNAL_RUN_LAST,
+            GObject.TYPE_NONE,
+            (GObject.TYPE_STRING, GObject.TYPE_PYOBJECT),
+        ),
+        "error": (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, (GObject.TYPE_PYOBJECT,)),
     }
 
     def __init__(self, files, force=False, ref_lvl=89):
@@ -91,8 +102,9 @@ class ReplayGain(GObject.GObject):
 
         # this holds all track gain data
         self.track_data = {}
-        self.album_data = GainData(0, ref_level=self.ref_lvl,
-                                   gain_type=GainData.TP_ALBUM)
+        self.album_data = GainData(
+            0, ref_level=self.ref_lvl, gain_type=GainData.TP_ALBUM
+        )
 
     def start(self):
         """Start processing.
@@ -119,9 +131,11 @@ class ReplayGain(GObject.GObject):
         if elem is None:
             # that element couldn't be created, maybe because plugins are
             # missing?
-            raise MissingPluginsError("failed to construct pipeline (did you "
-                                      "install all necessary GStreamer "
-                                      "plugins?)")
+            raise MissingPluginsError(
+                "failed to construct pipeline (did you "
+                "install all necessary GStreamer "
+                "plugins?)"
+            )
         else:
             return elem
 
@@ -132,19 +146,15 @@ class ReplayGain(GObject.GObject):
         # elements
         self.src = self._check_elem(Gst.ElementFactory.make("filesrc", "src"))
         self.pipe.add(self.src)
-        self.decbin = self._check_elem(Gst.ElementFactory.make("decodebin",
-                                                               "decbin"))
+        self.decbin = self._check_elem(Gst.ElementFactory.make("decodebin", "decbin"))
         self.pipe.add(self.decbin)
-        self.conv = self._check_elem(Gst.ElementFactory.make("audioconvert",
-                                                             "conv"))
+        self.conv = self._check_elem(Gst.ElementFactory.make("audioconvert", "conv"))
         self.pipe.add(self.conv)
-        self.res = self._check_elem(Gst.ElementFactory.make("audioresample",
-                                                            "res"))
+        self.res = self._check_elem(Gst.ElementFactory.make("audioresample", "res"))
         self.pipe.add(self.res)
         self.rg = self._check_elem(Gst.ElementFactory.make("rganalysis", "rg"))
         self.pipe.add(self.rg)
-        self.sink = self._check_elem(Gst.ElementFactory.make("fakesink",
-                                                             "sink"))
+        self.sink = self._check_elem(Gst.ElementFactory.make("fakesink", "sink"))
         self.pipe.add(self.sink)
 
         # Set num-tracks to the number of files we have to process so they're
@@ -202,7 +212,8 @@ class ReplayGain(GObject.GObject):
         tags = msg.parse_tag()
         trackdata = self.track_data.setdefault(
             self._current_file,
-            GainData(0, ref_level=self.ref_lvl, gain_type=GainData.TP_TRACK))
+            GainData(0, ref_level=self.ref_lvl, gain_type=GainData.TP_TRACK),
+        )
 
         def handle_tag(taglist, tag, userdata):
             if tag == Gst.TAG_TRACK_GAIN:
@@ -234,8 +245,11 @@ class ReplayGain(GObject.GObject):
         if msg.type == Gst.MessageType.TAG:
             self._process_tags(msg)
         elif msg.type == Gst.MessageType.EOS:
-            self.emit("track-finished", self._current_file,
-                      self.track_data[self._current_file])
+            self.emit(
+                "track-finished",
+                self._current_file,
+                self.track_data[self._current_file],
+            )
             # Preserve rganalysis state
             self.rg.set_locked_state(True)
             self.pipe.set_state(Gst.State.NULL)
@@ -270,11 +284,13 @@ def calculate(*args, **kwargs):
     def on_error(evsrc, exc):
         exc_slot[0] = exc
         loop.quit()
+
     rg = ReplayGain(*args, **kwargs)
     with util.gobject_signals(
-            rg,
-            ("all-finished", on_finished),
-            ("error", on_error),):
+        rg,
+        ("all-finished", on_finished),
+        ("error", on_error),
+    ):
         loop = GObject.MainLoop()
         rg.start()
         loop.run()
