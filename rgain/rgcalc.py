@@ -191,8 +191,7 @@ class ReplayGain(GObject.GObject):
         # that all file names passed to it are encoded in the system encoding).
         # That way, people on non-UTF-8 systems or with non-UTF-8 file names can
         # still force all file name processing into a different encoding.
-        self.src.set_property("location",
-                              fname.encode(util.getfilesystemencoding()))
+        self.src.set_property("location", fname)
         self._current_file = fname
         self.emit("track-started", fname)
 

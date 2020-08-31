@@ -30,7 +30,6 @@ import rgain.rgio
 __all__ = [
     "getfilesystemencoding",
     "ou",
-    "un",
     "Error",
     "init_gstreamer",
     "common_options"]
@@ -44,14 +43,8 @@ def ou(arg):
     if isinstance(arg, str):
         # we aggressively suggest that anything passed into this function should
         # be a Unicode string by rejecting non-ASCII byte input.
-        return arg.decode("ascii").encode(stdout_encoding)
+        return arg
     return arg.encode(stdout_encoding)
-
-def un(arg, encoding):
-    if isinstance(arg, str):
-        return arg.decode(encoding)
-    return arg
-
 
 class Error(Exception):
     def __init__(self, message, exc_info=None):
@@ -60,9 +53,9 @@ class Error(Exception):
         # should get us what we want
         self.exc_info = exc_info if exc_info else sys.exc_info()
     
-    def __unicode__(self):
+    def __str__(self):
         if not self._output_full_exception():
-            return Exception.__unicode__(self)
+            return Exception.__str__(self)
         else:
             return str("".join(traceback.format_exception(*self.exc_info)))
 

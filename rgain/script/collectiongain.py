@@ -104,8 +104,7 @@ def collect_files(music_dir, files, visited_cache, is_supported_format):
     i = 0
     for dirpath, dirnames, filenames in os.walk(music_dir):
         for filename in filenames:
-            filepath = un(relpath(os.path.join(dirpath, filename), music_dir),
-                                  getfilesystemencoding())
+            filepath = relpath(os.path.join(dirpath, filename), music_dir)
             properpath = os.path.join(dirpath, filename)
             mtime = os.path.getmtime(properpath)
 
@@ -254,7 +253,6 @@ def do_gain_all(music_dir, albums, single_tracks, files, ref_level=89,
 
 def do_collectiongain(music_dir, ref_level=89, force=False, dry_run=False,
                       mp3_format=None, ignore_cache=False, jobs=0):
-    music_dir = un(music_dir, getfilesystemencoding())
 
     music_abspath = os.path.abspath(music_dir)
     musicpath_hash = md5(music_abspath.encode("utf-8")).hexdigest()

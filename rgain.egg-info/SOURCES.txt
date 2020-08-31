@@ -1,6 +1,7 @@
 COPYING
 MANIFEST.in
 README
+setup.cfg
 setup.py
 man/collectiongain.rst
 man/replaygain.rst

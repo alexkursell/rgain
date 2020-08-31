@@ -34,7 +34,7 @@ def calculate_gain(files, ref_level):
         loop.quit()
     
     def on_trk_started(evsrc, filename):
-        print(ou("  %s:" % filename.decode("utf-8")), end=' ')
+        print(ou("  %s:" % filename), end=' ')
         sys.stdout.flush()
         
     def on_trk_finished(evsrc, filename, gaindata):
@@ -60,11 +60,8 @@ def calculate_gain(files, ref_level):
         raise exc_slot[0]
     return rg.track_data, rg.album_data
 
-
 def do_gain(files, ref_level=89, force=False, dry_run=False, album=True,
             mp3_format=None):
-    
-    files = [un(filename, getfilesystemencoding()) for filename in files]
     
     formats_map = rgio.BaseFormatsMap(mp3_format)
     
@@ -141,7 +138,6 @@ def show_rgain_info(filenames, mp3_format=None):
     formats_map = rgio.BaseFormatsMap(mp3_format)
     
     for filename in filenames:
-        filename = un(filename, getfilesystemencoding())
         print(ou(filename))
         try:
             trackdata, albumdata = formats_map.read_gain(filename)
