@@ -1,2 +1,4 @@
 build/
 dist/
+.vscode/
+rgain/__pycache__/
