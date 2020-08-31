@@ -191,6 +191,12 @@ with this switch are:
 Changes
 =======
 
+rgain 2.0.0 (2020-08-30)
+------------------------
+
+-   Port to python 3.
+-   Possibly break everything because string encoding is hard.
+
 rgain 1.3.4 (2016-05-06)
 ------------------------
 
