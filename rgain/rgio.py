@@ -31,7 +31,7 @@ class AudioFormatError(Exception):
 
 
 # some generic helper functions
-def parse_db(string):
+def parse_db(string: str):
     string = string.strip()
     if string.lower().endswith("db"):
         string = string[:-2].strip()
@@ -102,7 +102,10 @@ class SimpleTagReaderWriter(BaseTagReaderWriter):
 
     def _read_gain_data(self, tags, gain_tag, peak_tag):
         if gain_tag in tags:
-            gain = parse_db(tags[gain_tag][0])
+            if isinstance(tags[gain_tag][0], bytes):
+                gain = parse_db(tags[gain_tag][0].decode("utf-8"))
+            else:
+                gain = parse_db(tags[gain_tag][0])
             if gain is None:
                 return None
             gaindata = GainData(gain)
@@ -207,7 +210,7 @@ class MP3rgorgTagReaderWriter(MP3TagReaderWriter):
 RVA2_GAIN_MIN = -64
 RVA2_GAIN_MAX = float(64 * 512 - 1) / 512.0
 RVA2_PEAK_MIN = 0
-RVA2_PEAK_MAX = float(2 ** 16 - 1) / float(2 ** 15)
+RVA2_PEAK_MAX = float(2**16 - 1) / float(2**15)
 
 
 def clamp(v, min, max):
